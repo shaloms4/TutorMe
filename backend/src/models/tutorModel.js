@@ -1,4 +1,3 @@
-// src/models/tutorModel.js
 const mongoose = require('mongoose');
 
 const tutorSchema = new mongoose.Schema({
@@ -20,7 +19,6 @@ const tutorSchema = new mongoose.Schema({
     enum: ['tutor'],
     default: 'tutor',
   },
-  // You can add more fields specific to a tutor, such as qualifications, bio, etc.
   qualifications: {
     type: String,
     required: false, // Optional field

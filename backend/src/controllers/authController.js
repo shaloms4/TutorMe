@@ -1,11 +1,17 @@
 const Student = require('../models/studentModel');
 const Tutor = require('../models/tutorModel');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Register a new student
 const registerStudent = async (req, res) => {
   try {
     const { email, password, username } = req.body;
-    const newStudent = new Student({ email, password, username });
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newStudent = new Student({ email, password: hashedPassword, username });
     await newStudent.save();
     res.status(201).send({ message: 'Student registered successfully' });
   } catch (error) {
@@ -17,7 +23,11 @@ const registerStudent = async (req, res) => {
 const registerTutor = async (req, res) => {
   try {
     const { email, password, username } = req.body;
-    const newTutor = new Tutor({ email, password, username });
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newTutor = new Tutor({ email, password: hashedPassword, username });
     await newTutor.save();
     res.status(201).send({ message: 'Tutor registered successfully' });
   } catch (error) {
@@ -25,20 +35,35 @@ const registerTutor = async (req, res) => {
   }
 };
 
-// Login user (basic example)
+// Login user
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  // Simple authentication for demo purposes
-  const student = await Student.findOne({ email, password });
-  const tutor = await Tutor.findOne({ email, password });
+    // Check if user exists
+    const student = await Student.findOne({ email });
+    const tutor = await Tutor.findOne({ email });
 
-  if (student) {
-    return res.status(200).send({ message: 'Student logged in successfully' });
-  } else if (tutor) {
-    return res.status(200).send({ message: 'Tutor logged in successfully' });
-  } else {
-    return res.status(400).send({ message: 'Invalid credentials' });
+    const user = student || tutor; // Either a student or a tutor
+
+    if (!user) {
+      return res.status(400).send({ message: 'Invalid email or password' });
+    }
+
+    // Compare password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).send({ message: 'Invalid email or password' });
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '1h', // Token expires in 1 hour
+    });
+
+    res.status(200).send({ message: 'Login successful', token });
+  } catch (error) {
+    res.status(500).send({ message: 'Error logging in', error });
   }
 };
 
