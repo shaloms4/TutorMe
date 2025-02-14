@@ -12,7 +12,14 @@ const tutorSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() {
+      // Make password required only for non-OAuth users
+      return !this.isOAuth;
+    },
+  },
+  isOAuth: {
+    type: Boolean,
+    default: false,
   },
   role: {
     type: String,

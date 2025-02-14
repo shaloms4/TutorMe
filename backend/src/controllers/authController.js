@@ -40,12 +40,15 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
-    const student = await Student.findOne({ email });
-    const tutor = await Tutor.findOne({ email });
+    // Check if student exists
+    let user = await Student.findOne({ email });
 
-    const user = student || tutor; // Either a student or a tutor
+    // If not found in student, check in tutor collection
+    if (!user) {
+      user = await Tutor.findOne({ email });
+    }
 
+    // If user not found in both collections
     if (!user) {
       return res.status(400).send({ message: 'Invalid email or password' });
     }
@@ -56,14 +59,15 @@ const loginUser = async (req, res) => {
       return res.status(400).send({ message: 'Invalid email or password' });
     }
 
-    // Generate JWT
+    // Generate JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '1h', // Token expires in 1 hour
     });
 
     res.status(200).send({ message: 'Login successful', token });
   } catch (error) {
-    res.status(500).send({ message: 'Error logging in', error });
+    console.error(error);
+    res.status(500).send({ message: 'Error logging in', error: error.message });
   }
 };
 
