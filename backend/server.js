@@ -2,14 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
-const passport = require("passport"); // Use passport directly
-require("./src/configs/passportConfig"); // Import passport config (do NOT assign to a variable)
+const passport = require("passport"); 
+require("./src/configs/passportConfig"); 
 const authRoutes = require("./src/routes/authRoute");
 
 const app = express();
 const port = 3000;
 
-// Middleware
+// Middleware for parsing JSON data in the request body.
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
 // Session Middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET, // Store in .env
+    secret: process.env.SESSION_SECRET, 
     resave: false,
     saveUninitialized: true,
   })

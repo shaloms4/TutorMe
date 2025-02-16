@@ -1,7 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const Student = require("../models/studentModel"); // Import student model
-const Tutor = require("../models/tutorModel"); // Import tutor model
+const Student = require("../models/studentModel"); 
+const Tutor = require("../models/tutorModel"); 
 
 passport.use(
   new GoogleStrategy(
@@ -40,12 +40,13 @@ passport.use(
   )
 );
 
-// Serialize user to store in session
+// Store only the user's ID in the session
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-// Deserialize user from session
+
+// Retrieve the full user object from the database
 passport.deserializeUser(async (id, done) => {
   const user = await Student.findById(id) || await Tutor.findById(id);
   done(null, user);
